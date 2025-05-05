@@ -3,366 +3,655 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Offline C++ Code Fixer Game</title>
+    <title>Code Fixer Game</title>
     <style>
-        /* CSS will be embedded for offline use */
-        body {
-            font-family: 'Courier New', monospace;
-            background-color: #f5f5f5;
+        :root {
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --accent: #3498db;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --code-bg: #282c34;
+            --code-text: #abb2bf;
+        }
+        
+        * {
+            box-sizing: border-box;
             margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
             padding: 20px;
-            color: #333;
         }
         
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
             background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
         }
         
         header {
+            background-color: var(--primary);
+            color: white;
+            padding: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
+            flex-wrap: wrap;
         }
         
-        .score {
-            font-size: 1.1em;
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        
+        .header-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .score-display {
+            background-color: var(--secondary);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: flex;
+            gap: 15px;
+        }
+        
+        .score-display span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .language-tabs {
+            display: flex;
+            background-color: var(--secondary);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .language-tab {
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: all 0.3s;
             font-weight: bold;
         }
         
-        .score span {
-            margin-left: 15px;
+        .language-tab.active {
+            background-color: var(--accent);
+        }
+        
+        .language-tab:hover:not(.active) {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .level-selector {
+            display: flex;
+            gap: 5px;
+            padding: 10px 20px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .level-btn {
+            padding: 5px 10px;
+            border-radius: 3px;
+            background-color: #e9ecef;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .level-btn:hover {
+            background-color: #dee2e6;
+        }
+        
+        .level-btn.active {
+            background-color: var(--accent);
+            color: white;
         }
         
         .game-area {
             display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+        
+        .challenge-container {
+            display: flex;
             gap: 20px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
         }
         
-        .code-container, .editor-container {
+        .code-panel {
             flex: 1;
             min-width: 300px;
         }
         
-        pre {
-            background-color: #282c34;
-            padding: 15px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-            height: 300px;
-            overflow-y: auto;
-            color: #abb2bf;
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
         }
         
-        code {
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
+        .panel-title {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        pre {
+            background-color: var(--code-bg);
+            padding: 15px;
+            border-radius: 5px;
+            height: 300px;
+            overflow-y: auto;
+            color: var(--code-text);
+            tab-size: 4;
+            margin-bottom: 10px;
         }
         
         textarea {
             width: 100%;
             height: 300px;
-            font-family: 'Courier New', monospace;
+            font-family: 'Consolas', 'Courier New', monospace;
             font-size: 14px;
             padding: 15px;
             border: 1px solid #ddd;
             border-radius: 5px;
             resize: none;
-            margin-bottom: 10px;
-            background-color: #282c34;
-            color: #abb2bf;
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            line-height: 1.5;
         }
         
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
             padding: 10px 15px;
-            margin-right: 10px;
-            border-radius: 4px;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.3s;
+            font-weight: bold;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         
-        button:hover {
-            background-color: #45a049;
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
         }
         
-        #hint-btn {
-            background-color: #2196F3;
+        .btn-primary:hover {
+            background-color: #2980b9;
         }
         
-        #hint-btn:hover {
-            background-color: #0b7dda;
+        .btn-success {
+            background-color: var(--success);
+            color: white;
         }
         
-        #next-btn {
-            background-color: #ff9800;
+        .btn-success:hover {
+            background-color: #27ae60;
         }
         
-        #next-btn:hover {
-            background-color: #e68a00;
+        .btn-warning {
+            background-color: var(--warning);
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background-color: #e67e22;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .output-container {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        
+        .output-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .output-content {
+            white-space: pre-wrap;
+            font-family: 'Consolas', 'Courier New', monospace;
+            background-color: white;
+            padding: 10px;
+            border-radius: 3px;
+            border: 1px solid #ddd;
+            min-height: 60px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .success-output {
+            border-left: 4px solid var(--success);
+        }
+        
+        .error-output {
+            border-left: 4px solid var(--danger);
         }
         
         .feedback {
             margin-top: 20px;
+        }
+        
+        .message {
             padding: 15px;
             border-radius: 5px;
-            width: 100%;
-        }
-        
-        #message {
+            margin-bottom: 15px;
             font-weight: bold;
-            margin-bottom: 10px;
-            min-height: 24px;
         }
         
-        #error-output {
-            color: #d32f2f;
-            white-space: pre-wrap;
-            font-family: 'Courier New', monospace;
+        .message.success {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: var(--success);
+            border-left: 4px solid var(--success);
         }
         
-        .success {
-            color: #4CAF50;
+        .message.error {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: var(--danger);
+            border-left: 4px solid var(--danger);
         }
         
-        .error {
-            color: #d32f2f;
+        .message.info {
+            background-color: rgba(52, 152, 219, 0.1);
+            color: var(--accent);
+            border-left: 4px solid var(--accent);
         }
         
-        .hint {
-            color: #2196F3;
-        }
-        
-        #output-display {
-            background-color: #282c34;
-            color: #abb2bf;
-            padding: 10px;
+        .diff-container {
+            background-color: #f8f9fa;
+            padding: 15px;
             border-radius: 5px;
-            margin-top: 10px;
-            min-height: 50px;
+            font-family: 'Consolas', 'Courier New', monospace;
             white-space: pre-wrap;
         }
         
-        .output-label {
-            font-weight: bold;
-            margin-top: 10px;
+        .diff-line {
+            margin-bottom: 5px;
+            padding: 2px 5px;
         }
         
-        .level-selector {
-            margin-bottom: 20px;
+        .diff-added {
+            background-color: rgba(46, 204, 113, 0.2);
+            border-left: 3px solid var(--success);
         }
         
-        .level-selector button {
-            margin: 5px;
-            padding: 5px 10px;
+        .diff-removed {
+            background-color: rgba(231, 76, 60, 0.2);
+            border-left: 3px solid var(--danger);
         }
         
-        .active-level {
-            background-color: #333;
-            color: white;
+        @media (max-width: 768px) {
+            .challenge-container {
+                flex-direction: column;
+            }
+            
+            .header-controls {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .language-tabs {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Offline C++ Code Fixer</h1>
-            <div class="score">
-                <span>Score: <span id="score">0</span></span>
-                <span>Level: <span id="level">1</span></span>
+            <h1>Code Fixer Game</h1>
+            <div class="header-controls">
+                <div class="score-display">
+                    <span><i>⭐</i> Score: <span id="score">0</span></span>
+                    <span><i>🏆</i> Streak: <span id="streak">0</span></span>
+                </div>
+                <div class="language-tabs">
+                    <div class="language-tab active" data-lang="cpp">C++</div>
+                    <div class="language-tab" data-lang="python">Python</div>
+                    <div class="language-tab" data-lang="java">Java</div>
+                    <div class="language-tab" data-lang="csharp">C#</div>
+                </div>
             </div>
         </header>
         
         <div class="level-selector">
-            <button id="level1-btn" class="active-level">Level 1: Basics</button>
-            <button id="level2-btn">Level 2: Loops & Arrays</button>
-            <button id="level3-btn">Level 3: Pointers & Functions</button>
-            <button id="level4-btn">Level 4: OOP</button>
-            <button id="level5-btn">Level 5: Advanced</button>
+            <button class="level-btn active" data-level="1">Level 1</button>
+            <button class="level-btn" data-level="2">Level 2</button>
+            <button class="level-btn" data-level="3">Level 3</button>
+            <button class="level-btn" data-level="4">Level 4</button>
+            <button class="level-btn" data-level="5">Level 5</button>
         </div>
         
         <div class="game-area">
-            <div class="code-container">
-                <h2>Fix this code:</h2>
-                <pre id="code-display"><code id="broken-code"></code></pre>
-                <div class="output-label">Expected Output:</div>
-                <div id="expected-output"></div>
-            </div>
-            
-            <div class="editor-container">
-                <h2>Your fix:</h2>
-                <textarea id="code-editor" spellcheck="false"></textarea>
-                <div>
-                    <button id="submit-btn">Submit Fix</button>
-                    <button id="hint-btn">Get Hint</button>
-                    <button id="next-btn">Next Challenge</button>
+            <div class="challenge-container">
+                <div class="code-panel">
+                    <div class="panel-header">
+                        <div class="panel-title">Fix this code:</div>
+                        <div id="challenge-title" class="challenge-title">Challenge</div>
+                    </div>
+                    <pre id="broken-code"><code id="code-content"></code></pre>
+                    
+                    <div class="output-container">
+                        <div class="output-title">Expected Output</div>
+                        <div class="output-content" id="expected-output"></div>
+                    </div>
                 </div>
-                <div class="output-label">Your Output:</div>
-                <div id="output-display"></div>
+                
+                <div class="code-panel">
+                    <div class="panel-header">
+                        <div class="panel-title">Your solution:</div>
+                    </div>
+                    <textarea id="code-editor" spellcheck="false"></textarea>
+                    
+                    <div class="button-group">
+                        <button id="submit-btn" class="btn btn-primary">Submit Fix</button>
+                        <button id="hint-btn" class="btn btn-warning">Get Hint</button>
+                        <button id="next-btn" class="btn btn-success">Next Challenge</button>
+                        <button id="reset-btn" class="btn btn-danger">Reset Code</button>
+                    </div>
+                    
+                    <div class="output-container">
+                        <div class="output-title">Your Output</div>
+                        <div class="output-content" id="user-output"></div>
+                    </div>
+                </div>
             </div>
             
             <div class="feedback">
-                <div id="message"></div>
-                <div id="error-output"></div>
+                <div id="message" class="message"></div>
+                <div id="diff-output" class="diff-container" style="display: none;"></div>
             </div>
         </div>
     </div>
     
     <script>
-        // Extensive code challenges organized by level
+        // Extensive code challenges for all languages
         const codeChallenges = {
-            1: [
-                {
-                    title: "Missing Namespace",
-                    broken: `#include <iostream>\n\nint main() {\n    cout << "Hello World";\n    return 0;\n}`,
-                    fixed: `#include <iostream>\n\nint main() {\n    std::cout << "Hello World";\n    return 0;\n}`,
-                    hint: "Remember to specify the namespace for cout or use 'using namespace std;'",
-                    expectedOutput: "Hello World"
-                },
-                {
-                    title: "Missing Semicolon",
-                    broken: `#include <iostream>\n\nint main() {\n    int x = 5\n    std::cout << x;\n    return 0;\n}`,
-                    fixed: `#include <iostream>\n\nint main() {\n    int x = 5;\n    std::cout << x;\n    return 0;\n}`,
-                    hint: "Check for missing semicolons at the end of statements",
-                    expectedOutput: "5"
-                },
-                {
-                    title: "Comparison vs Assignment",
-                    broken: `#include <iostream>\n\nint main() {\n    int number = 10;\n    if (number = 5) {\n        std::cout << "Number is 5";\n    }\n    return 0;\n}`,
-                    fixed: `#include <iostream>\n\nint main() {\n    int number = 10;\n    if (number == 5) {\n        std::cout << "Number is 5";\n    }\n    return 0;\n}`,
-                    hint: "Check your comparison operator in the if statement",
-                    expectedOutput: ""
-                }
-            ],
-            2: [
-                {
-                    title: "For Loop Syntax",
-                    broken: `#include <iostream>\n\nint main() {\n    for (int i = 0; i < 5; i++ {\n        std::cout << i << " ";\n    }\n    return 0;\n}`,
-                    fixed: `#include <iostream>\n\nint main() {\n    for (int i = 0; i < 5; i++) {\n        std::cout << i << " ";\n    }\n    return 0;\n}`,
-                    hint: "Check the syntax of your for loop, particularly the closing parenthesis",
-                    expectedOutput: "0 1 2 3 4 "
-                },
-                {
-                    title: "Array Bounds",
-                    broken: `#include <iostream>\n\nint main() {\n    int arr[3] = {1, 2, 3};\n    std::cout << arr[3];\n    return 0;\n}`,
-                    fixed: `#include <iostream>\n\nint main() {\n    int arr[3] = {1, 2, 3};\n    std::cout << arr[2];\n    return 0;\n}`,
-                    hint: "Remember that array indices start at 0, so what's the valid range for this array?",
-                    expectedOutput: "3"
-                },
-                {
-                    title: "While Loop Condition",
-                    broken: `#include <iostream>\n\nint main() {\n    int i = 5;\n    while (i > 0) {\n        std::cout << i << " ";\n        i--;\n    }\n    return 0;\n}`,
-                    fixed: `#include <iostream>\n\nint main() {\n    int i = 5;\n    while (i > 0) {\n        std::cout << i << " ";\n        i--;\n    }\n    return 0;\n}`,
-                    hint: "This code is actually correct! Click Next Challenge",
-                    expectedOutput: "5 4 3 2 1 "
-                }
-            ],
-            3: [
-                {
-                    title: "Memory Leak",
-                    broken: `#include <iostream>\n\nint main() {\n    int* ptr = new int;\n    *ptr = 5;\n    std::cout << *ptr;\n    return 0;\n}`,
-                    fixed: `#include <iostream>\n\nint main() {\n    int* ptr = new int;\n    *ptr = 5;\n    std::cout << *ptr;\n    delete ptr;\n    return 0;\n}`,
-                    hint: "Don't forget to clean up dynamically allocated memory",
-                    expectedOutput: "5"
-                },
-                {
-                    title: "Function Declaration",
-                    broken: `#include <iostream>\n\nint main() {\n    std::cout << add(5, 3);\n    return 0;\n}`,
-                    fixed: `#include <iostream>\n\nint add(int a, int b) {\n    return a + b;\n}\n\nint main() {\n    std::cout << add(5, 3);\n    return 0;\n}`,
-                    hint: "The add function is called but not defined",
-                    expectedOutput: "8"
-                },
-                {
-                    title: "Pointer Arithmetic",
-                    broken: `#include <iostream>\n\nint main() {\n    int arr[3] = {10, 20, 30};\n    int* ptr = arr;\n    std::cout << *(ptr + 2);\n    return 0;\n}`,
-                    fixed: `#include <iostream>\n\nint main() {\n    int arr[3] = {10, 20, 30};\n    int* ptr = arr;\n    std::cout << *(ptr + 2);\n    return 0;\n}`,
-                    hint: "This code is correct! Pointer arithmetic is working properly.",
-                    expectedOutput: "30"
-                }
-            ],
-            4: [
-                {
-                    title: "Class Definition",
-                    broken: `#include <iostream>\n\nclass MyClass {\n    int value;\npublic:\n    MyClass(int v) { value = v; }\n    int getValue();\n};\n\nint main() {\n    MyClass obj(42);\n    std::cout << obj.getValue();\n    return 0;\n}`,
-                    fixed: `#include <iostream>\n\nclass MyClass {\n    int value;\npublic:\n    MyClass(int v) { value = v; }\n    int getValue() { return value; }\n};\n\nint main() {\n    MyClass obj(42);\n    std::cout << obj.getValue();\n    return 0;\n}`,
-                    hint: "The getValue method is declared but not defined",
-                    expectedOutput: "42"
-                },
-                {
-                    title: "Inheritance",
-                    broken: `#include <iostream>\n\nclass Animal {\npublic:\n    virtual void speak() = 0;\n};\n\nclass Dog : public Animal {\n    void speak() { std::cout << "Woof!"; }\n};\n\nint main() {\n    Dog myDog;\n    myDog.speak();\n    return 0;\n}`,
-                    fixed: `#include <iostream>\n\nclass Animal {\npublic:\n    virtual void speak() = 0;\n};\n\nclass Dog : public Animal {\npublic:\n    void speak() override { std::cout << "Woof!"; }\n};\n\nint main() {\n    Dog myDog;\n    myDog.speak();\n    return 0;\n}`,
-                    hint: "Check the access specifier and consider using override",
-                    expectedOutput: "Woof!"
-                },
-                {
-                    title: "Constructor Initialization",
-                    broken: `#include <iostream>\n\nclass Point {\n    int x, y;\npublic:\n    Point(int a, int b) {\n        x = a;\n        y = b;\n    }\n    void print() { std::cout << x << "," << y; }\n};\n\nint main() {\n    Point p(3, 4);\n    p.print();\n    return 0;\n}`,
-                    fixed: `#include <iostream>\n\nclass Point {\n    int x, y;\npublic:\n    Point(int a, int b) : x(a), y(b) {}\n    void print() { std::cout << x << "," << y; }\n};\n\nint main() {\n    Point p(3, 4);\n    p.print();\n    return 0;\n}`,
-                    hint: "Consider using member initializer list for better practice",
-                    expectedOutput: "3,4"
-                }
-            ],
-            5: [
-                {
-                    title: "Template Function",
-                    broken: `#include <iostream>\n\nint max(int a, int b) {\n    return (a > b) ? a : b;\n}\n\ndouble max(double a, double b) {\n    return (a > b) ? a : b;\n}\n\nint main() {\n    std::cout << max(5, 3) << " " << max(2.5, 3.1);\n    return 0;\n}`,
-                    fixed: `#include <iostream>\n\ntemplate <typename T>\nT max(T a, T b) {\n    return (a > b) ? a : b;\n}\n\nint main() {\n    std::cout << max(5, 3) << " " << max(2.5, 3.1);\n    return 0;\n}`,
-                    hint: "Consider using templates to avoid function overloading",
-                    expectedOutput: "5 3.1"
-                },
-                {
-                    title: "Lambda Function",
-                    broken: `#include <iostream>\n#include <vector>\n#include <algorithm>\n\nint main() {\n    std::vector<int> nums = {3, 1, 4, 1, 5};\n    std::sort(nums.begin(), nums.end(), bool(int a, int b) { return a < b; });\n    for(int n : nums) std::cout << n << " ";\n    return 0;\n}`,
-                    fixed: `#include <iostream>\n#include <vector>\n#include <algorithm>\n\nint main() {\n    std::vector<int> nums = {3, 1, 4, 1, 5};\n    std::sort(nums.begin(), nums.end(), [](int a, int b) { return a < b; });\n    for(int n : nums) std::cout << n << " ";\n    return 0;\n}`,
-                    hint: "Check the lambda function syntax",
-                    expectedOutput: "1 1 3 4 5 "
-                },
-                {
-                    title: "Smart Pointer",
-                    broken: `#include <iostream>\n#include <memory>\n\nclass Resource {\npublic:\n    Resource() { std::cout << "Resource acquired\\n"; }\n    ~Resource() { std::cout << "Resource destroyed\\n"; }\n    void use() { std::cout << "Resource used\\n"; }\n};\n\nint main() {\n    Resource* res = new Resource();\n    res->use();\n    return 0;\n}`,
-                    fixed: `#include <iostream>\n#include <memory>\n\nclass Resource {\npublic:\n    Resource() { std::cout << "Resource acquired\\n"; }\n    ~Resource() { std::cout << "Resource destroyed\\n"; }\n    void use() { std::cout << "Resource used\\n"; }\n};\n\nint main() {\n    auto res = std::make_unique<Resource>();\n    res->use();\n    return 0;\n}`,
-                    hint: "Consider using smart pointers to manage memory automatically",
-                    expectedOutput: "Resource acquired\nResource used\nResource destroyed\n"
-                }
-            ]
+            cpp: {
+                1: [
+                    {
+                        title: "Missing Namespace",
+                        broken: `#include <iostream>\n\nint main() {\n    cout << "Hello World";\n    return 0;\n}`,
+                        fixed: `#include <iostream>\n\nint main() {\n    std::cout << "Hello World";\n    return 0;\n}`,
+                        hint: "Remember to specify the namespace for cout or use 'using namespace std;'",
+                        expectedOutput: "Hello World"
+                    },
+                    {
+                        title: "Missing Semicolon",
+                        broken: `#include <iostream>\n\nint main() {\n    int x = 5\n    std::cout << x;\n    return 0;\n}`,
+                        fixed: `#include <iostream>\n\nint main() {\n    int x = 5;\n    std::cout << x;\n    return 0;\n}`,
+                        hint: "Check for missing semicolons at the end of statements",
+                        expectedOutput: "5"
+                    }
+                ],
+                2: [
+                    {
+                        title: "For Loop Syntax",
+                        broken: `#include <iostream>\n\nint main() {\n    for (int i = 0; i < 5; i++ {\n        std::cout << i << " ";\n    }\n    return 0;\n}`,
+                        fixed: `#include <iostream>\n\nint main() {\n    for (int i = 0; i < 5; i++) {\n        std::cout << i << " ";\n    }\n    return 0;\n}`,
+                        hint: "Check the syntax of your for loop, particularly the closing parenthesis",
+                        expectedOutput: "0 1 2 3 4 "
+                    }
+                ],
+                3: [
+                    {
+                        title: "Memory Leak",
+                        broken: `#include <iostream>\n\nint main() {\n    int* ptr = new int;\n    *ptr = 5;\n    std::cout << *ptr;\n    return 0;\n}`,
+                        fixed: `#include <iostream>\n\nint main() {\n    int* ptr = new int;\n    *ptr = 5;\n    std::cout << *ptr;\n    delete ptr;\n    return 0;\n}`,
+                        hint: "Don't forget to clean up dynamically allocated memory",
+                        expectedOutput: "5"
+                    }
+                ],
+                4: [
+                    {
+                        title: "Class Definition",
+                        broken: `#include <iostream>\n\nclass MyClass {\n    int value;\npublic:\n    MyClass(int v) { value = v; }\n    int getValue();\n};\n\nint main() {\n    MyClass obj(42);\n    std::cout << obj.getValue();\n    return 0;\n}`,
+                        fixed: `#include <iostream>\n\nclass MyClass {\n    int value;\npublic:\n    MyClass(int v) { value = v; }\n    int getValue() { return value; }\n};\n\nint main() {\n    MyClass obj(42);\n    std::cout << obj.getValue();\n    return 0;\n}`,
+                        hint: "The getValue method is declared but not defined",
+                        expectedOutput: "42"
+                    }
+                ],
+                5: [
+                    {
+                        title: "Smart Pointer",
+                        broken: `#include <iostream>\n#include <memory>\n\nclass Resource {\npublic:\n    Resource() { std::cout << "Resource acquired\\n"; }\n    ~Resource() { std::cout << "Resource destroyed\\n"; }\n    void use() { std::cout << "Resource used\\n"; }\n};\n\nint main() {\n    Resource* res = new Resource();\n    res->use();\n    return 0;\n}`,
+                        fixed: `#include <iostream>\n#include <memory>\n\nclass Resource {\npublic:\n    Resource() { std::cout << "Resource acquired\\n"; }\n    ~Resource() { std::cout << "Resource destroyed\\n"; }\n    void use() { std::cout << "Resource used\\n"; }\n};\n\nint main() {\n    auto res = std::make_unique<Resource>();\n    res->use();\n    return 0;\n}`,
+                        hint: "Consider using smart pointers to manage memory automatically",
+                        expectedOutput: "Resource acquired\nResource used\nResource destroyed\n"
+                    }
+                ]
+            },
+            python: {
+                1: [
+                    {
+                        title: "Print Function",
+                        broken: `print "Hello World"`,
+                        fixed: `print("Hello World")`,
+                        hint: "In Python 3, print is a function and needs parentheses",
+                        expectedOutput: "Hello World"
+                    },
+                    {
+                        title: "Indentation Error",
+                        broken: `def greet():\nprint("Hello")`,
+                        fixed: `def greet():\n    print("Hello")`,
+                        hint: "Python uses indentation to define code blocks",
+                        expectedOutput: "Hello"
+                    }
+                ],
+                2: [
+                    {
+                        title: "List Iteration",
+                        broken: `numbers = [1, 2, 3]\nfor i in range(len(numbers)):\n    print(numbers[i)`,
+                        fixed: `numbers = [1, 2, 3]\nfor num in numbers:\n    print(num)`,
+                        hint: "Python has more elegant ways to iterate through lists",
+                        expectedOutput: "1\n2\n3\n"
+                    }
+                ],
+                3: [
+                    {
+                        title: "Dictionary Access",
+                        broken: `person = {'name': 'Alice', 'age': 25}\nprint(person[name])`,
+                        fixed: `person = {'name': 'Alice', 'age': 25}\nprint(person['name'])`,
+                        hint: "Dictionary keys need to be quoted when accessing",
+                        expectedOutput: "Alice"
+                    }
+                ],
+                4: [
+                    {
+                        title: "Class Method",
+                        broken: `class Calculator:\n    def add(self, a, b):\n        return a + b\n\nresult = Calculator.add(2, 3)\nprint(result)`,
+                        fixed: `class Calculator:\n    def add(self, a, b):\n        return a + b\n\ncalc = Calculator()\nresult = calc.add(2, 3)\nprint(result)`,
+                        hint: "Instance methods need to be called on an instance of the class",
+                        expectedOutput: "5"
+                    }
+                ],
+                5: [
+                    {
+                        title: "List Comprehension",
+                        broken: `numbers = [1, 2, 3, 4, 5]\neven_numbers = []\nfor num in numbers:\n    if num % 2 == 0:\n        even_numbers.append(num)\nprint(even_numbers)`,
+                        fixed: `numbers = [1, 2, 3, 4, 5]\neven_numbers = [num for num in numbers if num % 2 == 0]\nprint(even_numbers)`,
+                        hint: "Python has list comprehensions for more concise code",
+                        expectedOutput: "[2, 4]"
+                    }
+                ]
+            },
+            java: {
+                1: [
+                    {
+                        title: "Main Method",
+                        broken: `public class Hello {\n    public static void main() {\n        System.out.println("Hello World");\n    }\n}`,
+                        fixed: `public class Hello {\n    public static void main(String[] args) {\n        System.out.println("Hello World");\n    }\n}`,
+                        hint: "The main method in Java requires a String array parameter",
+                        expectedOutput: "Hello World"
+                    },
+                    {
+                        title: "Case Sensitivity",
+                        broken: `public class Hello {\n    public static void main(String[] args) {\n        system.out.println("Hello World");\n    }\n}`,
+                        fixed: `public class Hello {\n    public static void main(String[] args) {\n        System.out.println("Hello World");\n    }\n}`,
+                        hint: "Java is case-sensitive - System should be capitalized",
+                        expectedOutput: "Hello World"
+                    }
+                ],
+                2: [
+                    {
+                        title: "Array Declaration",
+                        broken: `public class Main {\n    public static void main(String[] args) {\n        int numbers[5] = {1, 2, 3, 4, 5};\n        System.out.println(numbers[0]);\n    }\n}`,
+                        fixed: `public class Main {\n    public static void main(String[] args) {\n        int[] numbers = {1, 2, 3, 4, 5};\n        System.out.println(numbers[0]);\n    }\n}`,
+                        hint: "In Java, array declarations put the brackets after the type",
+                        expectedOutput: "1"
+                    }
+                ],
+                3: [
+                    {
+                        title: "String Comparison",
+                        broken: `public class Main {\n    public static void main(String[] args) {\n        String s1 = "hello";\n        String s2 = new String("hello");\n        if (s1 == s2) {\n            System.out.println("Equal");\n        } else {\n            System.out.println("Not equal");\n        }\n    }\n}`,
+                        fixed: `public class Main {\n    public static void main(String[] args) {\n        String s1 = "hello";\n        String s2 = new String("hello");\n        if (s1.equals(s2)) {\n            System.out.println("Equal");\n        } else {\n            System.out.println("Not equal");\n        }\n    }\n}`,
+                        hint: "In Java, use equals() to compare string contents, not ==",
+                        expectedOutput: "Equal"
+                    }
+                ],
+                4: [
+                    {
+                        title: "Inheritance",
+                        broken: `class Animal {\n    public void sound() {\n        System.out.println("Animal sound");\n    }\n}\n\nclass Dog extends Animal {\n    public void Sound() {\n        System.out.println("Bark");\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Dog myDog = new Dog();\n        myDog.sound();\n    }\n}`,
+                        fixed: `class Animal {\n    public void sound() {\n        System.out.println("Animal sound");\n    }\n}\n\nclass Dog extends Animal {\n    @Override\n    public void sound() {\n        System.out.println("Bark");\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Dog myDog = new Dog();\n        myDog.sound();\n    }\n}`,
+                        hint: "Method names are case-sensitive and use @Override for clarity",
+                        expectedOutput: "Bark"
+                    }
+                ],
+                5: [
+                    {
+                        title: "Generic Method",
+                        broken: `public class Main {\n    public static void printArray(Object[] array) {\n        for (Object elem : array) {\n            System.out.print(elem + " ");\n        }\n    }\n    \n    public static void main(String[] args) {\n        Integer[] intArray = {1, 2, 3};\n        String[] strArray = {"A", "B", "C"};\n        printArray(intArray);\n        printArray(strArray);\n    }\n}`,
+                        fixed: `public class Main {\n    public static <T> void printArray(T[] array) {\n        for (T elem : array) {\n            System.out.print(elem + " ");\n        }\n    }\n    \n    public static void main(String[] args) {\n        Integer[] intArray = {1, 2, 3};\n        String[] strArray = {"A", "B", "C"};\n        printArray(intArray);\n        printArray(strArray);\n    }\n}`,
+                        hint: "Java generics provide type safety for methods working with different types",
+                        expectedOutput: "1 2 3 A B C "
+                    }
+                ]
+            },
+            csharp: {
+                1: [
+                    {
+                        title: "Main Method",
+                        broken: `using System;\n\nclass Program {\n    void Main() {\n        Console.WriteLine("Hello World");\n    }\n}`,
+                        fixed: `using System;\n\nclass Program {\n    static void Main() {\n        Console.WriteLine("Hello World");\n    }\n}`,
+                        hint: "The Main method in C# must be static",
+                        expectedOutput: "Hello World"
+                    },
+                    {
+                        title: "Case Sensitivity",
+                        broken: `using System;\n\nclass Program {\n    static void Main() {\n        console.WriteLine("Hello World");\n    }\n}`,
+                        fixed: `using System;\n\nclass Program {\n    static void Main() {\n        Console.WriteLine("Hello World");\n    }\n}`,
+                        hint: "C# is case-sensitive - Console should be capitalized",
+                        expectedOutput: "Hello World"
+                    }
+                ],
+                2: [
+                    {
+                        title: "Array Initialization",
+                        broken: `using System;\n\nclass Program {\n    static void Main() {\n        int[] numbers = new int[3];\n        numbers = {1, 2, 3};\n        Console.WriteLine(numbers[0]);\n    }\n}`,
+                        fixed: `using System;\n\nclass Program {\n    static void Main() {\n        int[] numbers = {1, 2, 3};\n        Console.WriteLine(numbers[0]);\n    }\n}`,
+                        hint: "In C#, arrays can be initialized directly with values",
+                        expectedOutput: "1"
+                    }
+                ],
+                3: [
+                    {
+                        title: "String Interpolation",
+                        broken: `using System;\n\nclass Program {\n    static void Main() {\n        string name = "Alice";\n        int age = 25;\n        Console.WriteLine("Name: " + name + ", Age: " + age);\n    }\n}`,
+                        fixed: `using System;\n\nclass Program {\n    static void Main() {\n        string name = "Alice";\n        int age = 25;\n        Console.WriteLine($"Name: {name}, Age: {age}");\n    }\n}`,
+                        hint: "C# has string interpolation for cleaner string formatting",
+                        expectedOutput: "Name: Alice, Age: 25"
+                    }
+                ],
+                4: [
+                    {
+                        title: "Property Definition",
+                        broken: `using System;\n\nclass Person {\n    private string name;\n    \n    public string GetName() {\n        return name;\n    }\n    \n    public void SetName(string value) {\n        name = value;\n    }\n}\n\nclass Program {\n    static void Main() {\n        Person p = new Person();\n        p.SetName("Alice");\n        Console.WriteLine(p.GetName());\n    }\n}`,
+                        fixed: `using System;\n\nclass Person {\n    public string Name { get; set; }\n}\n\nclass Program {\n    static void Main() {\n        Person p = new Person();\n        p.Name = "Alice";\n        Console.WriteLine(p.Name);\n    }\n}`,
+                        hint: "C# properties provide a cleaner alternative to getter/setter methods",
+                        expectedOutput: "Alice"
+                    }
+                ],
+                5: [
+                    {
+                        title: "LINQ Query",
+                        broken: `using System;\nusing System.Collections.Generic;\n\nclass Program {\n    static void Main() {\n        List<int> numbers = new List<int> {1, 2, 3, 4, 5};\n        List<int> evenNumbers = new List<int>();\n        foreach (int num in numbers) {\n            if (num % 2 == 0) {\n                evenNumbers.Add(num);\n            }\n        }\n        Console.WriteLine(string.Join(", ", evenNumbers));\n    }\n}`,
+                        fixed: `using System;\nusing System.Linq;\nusing System.Collections.Generic;\n\nclass Program {\n    static void Main() {\n        List<int> numbers = new List<int> {1, 2, 3, 4, 5};\n        var evenNumbers = numbers.Where(n => n % 2 == 0).ToList();\n        Console.WriteLine(string.Join(", ", evenNumbers));\n    }\n}`,
+                        hint: "LINQ provides powerful query capabilities for collections",
+                        expectedOutput: "2, 4"
+                    }
+                ]
+            }
         };
 
-        let currentChallenge = {};
+        // Game state
+        let currentLanguage = 'cpp';
         let currentLevel = 1;
+        let currentChallenge = {};
         let score = 0;
+        let streak = 0;
         let currentChallengeIndex = 0;
 
         // DOM elements
-        const codeDisplay = document.getElementById('broken-code');
+        const codeDisplay = document.getElementById('code-content');
         const codeEditor = document.getElementById('code-editor');
         const submitBtn = document.getElementById('submit-btn');
         const hintBtn = document.getElementById('hint-btn');
         const nextBtn = document.getElementById('next-btn');
+        const resetBtn = document.getElementById('reset-btn');
         const messageEl = document.getElementById('message');
-        const errorOutput = document.getElementById('error-output');
+        const diffOutput = document.getElementById('diff-output');
         const scoreEl = document.getElementById('score');
-        const levelEl = document.getElementById('level');
+        const streakEl = document.getElementById('streak');
         const expectedOutputEl = document.getElementById('expected-output');
-        const outputDisplay = document.getElementById('output-display');
-        const levelButtons = {
-            1: document.getElementById('level1-btn'),
-            2: document.getElementById('level2-btn'),
-            3: document.getElementById('level3-btn'),
-            4: document.getElementById('level4-btn'),
-            5: document.getElementById('level5-btn')
-        };
+        const userOutputEl = document.getElementById('user-output');
+        const challengeTitleEl = document.getElementById('challenge-title');
+        const languageTabs = document.querySelectorAll('.language-tab');
+        const levelButtons = document.querySelectorAll('.level-btn');
 
         // Initialize the game
         function init() {
@@ -373,43 +662,42 @@
             submitBtn.addEventListener('click', checkSolution);
             hintBtn.addEventListener('click', showHint);
             nextBtn.addEventListener('click', loadRandomChallenge);
+            resetBtn.addEventListener('click', resetCode);
             
-            // Level selector buttons
-            for (const [level, btn] of Object.entries(levelButtons)) {
-                btn.addEventListener('click', () => {
-                    currentLevel = parseInt(level);
-                    levelEl.textContent = currentLevel;
+            // Language tabs
+            languageTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    currentLanguage = tab.dataset.lang;
+                    document.querySelector('.language-tab.active').classList.remove('active');
+                    tab.classList.add('active');
                     loadRandomChallenge();
-                    updateActiveLevelButton();
                 });
-            }
+            });
             
-            updateActiveLevelButton();
-        }
-
-        function updateActiveLevelButton() {
-            for (const [level, btn] of Object.entries(levelButtons)) {
-                if (parseInt(level) === currentLevel) {
-                    btn.classList.add('active-level');
-                } else {
-                    btn.classList.remove('active-level');
-                }
-            }
+            // Level buttons
+            levelButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentLevel = parseInt(btn.dataset.level);
+                    document.querySelector('.level-btn.active').classList.remove('active');
+                    btn.classList.add('active');
+                    loadRandomChallenge();
+                });
+            });
         }
 
         // Load a random challenge
         function loadRandomChallenge() {
-            const challenges = codeChallenges[currentLevel];
+            const challenges = codeChallenges[currentLanguage][currentLevel];
             currentChallengeIndex = Math.floor(Math.random() * challenges.length);
             currentChallenge = challenges[currentChallengeIndex];
             
             codeDisplay.textContent = currentChallenge.broken;
             codeEditor.value = currentChallenge.broken;
             expectedOutputEl.textContent = currentChallenge.expectedOutput;
-            messageEl.textContent = '';
-            errorOutput.textContent = '';
-            outputDisplay.textContent = '';
-            messageEl.className = '';
+            challengeTitleEl.textContent = currentChallenge.title;
+            
+            clearFeedback();
+            resetOutput();
         }
 
         // Check the user's solution
@@ -417,91 +705,130 @@
             const userCode = codeEditor.value.trim();
             const fixedCode = currentChallenge.fixed.trim();
             
-            // Simple validation - in a real app you'd want more sophisticated checking
-            if (userCode === fixedCode) {
-                messageEl.textContent = 'Correct! Well done!';
-                messageEl.className = 'success';
-                errorOutput.textContent = '';
-                outputDisplay.textContent = currentChallenge.expectedOutput;
-                score += 10 * currentLevel;
-                updateScoreDisplay();
+            // Simulate output
+            const userOutput = simulateOutput(userCode);
+            userOutputEl.textContent = userOutput;
+            
+            if (userOutput === currentChallenge.expectedOutput) {
+                if (userCode === fixedCode) {
+                    // Perfect match
+                    showFeedback('success', 'Perfect! Code and output both match!');
+                    score += 10 * currentLevel;
+                    streak++;
+                } else {
+                    // Output matches but code style differs
+                    showFeedback('success', 'Output matches! Code could be improved though. +5 points');
+                    score += 5 * currentLevel;
+                    streak++;
+                    showDiff(userCode, fixedCode);
+                }
             } else {
-                messageEl.textContent = 'Not quite right. Try again!';
-                messageEl.className = 'error';
-                
-                // Try to simulate output (very simplified)
-                try {
-                    const simulatedOutput = simulateOutput(userCode);
-                    outputDisplay.textContent = simulatedOutput;
-                    
-                    if (simulatedOutput === currentChallenge.expectedOutput) {
-                        messageEl.textContent = 'Output matches but code style could be improved! +5 points';
-                        score += 5;
-                        updateScoreDisplay();
-                    }
-                } catch (e) {
-                    outputDisplay.textContent = 'Error: ' + e.message;
+                // Incorrect solution
+                showFeedback('error', 'Output doesn\'t match. Try again!');
+                streak = 0;
+                showDiff(userCode, fixedCode);
+            }
+            
+            updateScoreDisplay();
+        }
+
+        // Very simplified output simulation
+        function simulateOutput(code) {
+            // This is a mock simulation - just looks for patterns
+            try {
+                if (code.includes('"Hello World"') || code.includes("'Hello World'")) {
+                    return "Hello World";
                 }
                 
-                // Simple diff
-                const userLines = userCode.split('\n');
-                const fixedLines = fixedCode.split('\n');
-                
-                let diffOutput = '';
-                for (let i = 0; i < Math.max(userLines.length, fixedLines.length); i++) {
-                    if (userLines[i] !== fixedLines[i]) {
-                        diffOutput += `Line ${i+1}:\n`;
-                        diffOutput += `Yours:   ${userLines[i] || ''}\n`;
-                        diffOutput += `Correct: ${fixedLines[i] || ''}\n\n`;
+                if (code.includes('Resource')) {
+                    if (code.includes('make_unique') || code.includes('delete')) {
+                        return "Resource acquired\nResource used\nResource destroyed\n";
                     }
+                    return "Resource acquired\nResource used\n";
                 }
                 
-                errorOutput.textContent = diffOutput || "Your code runs but doesn't match the expected solution.";
+                if (code.includes('numbers') && code.includes('even')) {
+                    if (code.includes('2, 4') || code.includes('2 ,4') || code.includes('[2, 4]')) {
+                        return "2, 4";
+                    }
+                    return "[2, 4]";
+                }
+                
+                // Fallback to expected output if code is similar to solution
+                if (code.includes(currentChallenge.expectedOutput)) {
+                    return currentChallenge.expectedOutput;
+                }
+                
+                return "Output simulation limited in offline mode - check code structure";
+            } catch (e) {
+                return "Error in code: " + e.message;
             }
         }
 
-        // Very simplified output simulator
-        function simulateOutput(code) {
-            // This is a mock simulation - in reality we can't execute C++ in browser offline
-            // So we just look for obvious patterns
+        // Show differences between user code and solution
+        function showDiff(userCode, fixedCode) {
+            const userLines = userCode.split('\n');
+            const fixedLines = fixedCode.split('\n');
             
-            // Check for memory leak challenge
-            if (code.includes('new int') && !code.includes('delete')) {
-                throw new Error('Memory leak detected');
+            let diffHTML = '';
+            const maxLines = Math.max(userLines.length, fixedLines.length);
+            
+            for (let i = 0; i < maxLines; i++) {
+                const userLine = userLines[i] || '';
+                const fixedLine = fixedLines[i] || '';
+                
+                if (userLine !== fixedLine) {
+                    diffHTML += `<div class="diff-line diff-removed">Line ${i+1}: ${userLine}</div>`;
+                    diffHTML += `<div class="diff-line diff-added">Line ${i+1}: ${fixedLine}</div>`;
+                }
             }
             
-            // Check for expected output patterns
-            if (code.includes('"Hello World"')) {
-                return "Hello World";
-            }
+            diffOutput.innerHTML = diffHTML;
+            diffOutput.style.display = diffHTML ? 'block' : 'none';
+        }
+
+        // Show feedback message
+        function showFeedback(type, message) {
+            messageEl.textContent = message;
+            messageEl.className = `message ${type}`;
             
-            if (code.includes('cout << "Woof!"')) {
-                return "Woof!";
-            }
-            
-            if (code.includes('cout << "Resource used"')) {
-                return "Resource acquired\nResource used\nResource destroyed\n";
-            }
-            
-            // For number outputs, we'll just return the expected output if the code is similar
-            if (code.includes(currentChallenge.expectedOutput)) {
-                return currentChallenge.expectedOutput;
-            }
-            
-            throw new Error('Output simulation failed - check your code manually');
+            userOutputEl.className = `output-content ${type}-output`;
+        }
+
+        // Clear all feedback
+        function clearFeedback() {
+            messageEl.textContent = '';
+            messageEl.className = 'message';
+            diffOutput.style.display = 'none';
+            diffOutput.innerHTML = '';
+            userOutputEl.className = 'output-content';
+        }
+
+        // Reset the output display
+        function resetOutput() {
+            userOutputEl.textContent = '';
+            userOutputEl.className = 'output-content';
         }
 
         // Show a hint
         function showHint() {
-            messageEl.textContent = currentChallenge.hint;
-            messageEl.className = 'hint';
-            score = Math.max(0, score - 5); // Penalty for using hint
+            showFeedback('info', currentChallenge.hint);
+            score = Math.max(0, score - 3); // Small penalty for hints
+            streak = 0;
             updateScoreDisplay();
+        }
+
+        // Reset the code editor to original broken code
+        function resetCode() {
+            codeEditor.value = currentChallenge.broken;
+            clearFeedback();
+            resetOutput();
         }
 
         // Update score display
         function updateScoreDisplay() {
             scoreEl.textContent = score;
+            streakEl.textContent = streak;
         }
 
         // Start the game when page loads
