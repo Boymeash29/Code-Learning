@@ -9,18 +9,18 @@
 <body>
     <div class="container">
         <header>
-            <h1>Code Fixer Game</h1>
-            <div class="header-controls">
+            <div class="header-content">
+                <h1>Code Fixer Game</h1>
                 <div class="score-display">
                     <span><i>⭐</i> Score: <span id="score">0</span></span>
                     <span><i>🏆</i> Streak: <span id="streak">0</span></span>
                 </div>
-                <div class="language-tabs">
-                    <div class="language-tab active" data-lang="cpp">C++</div>
-                    <div class="language-tab" data-lang="python">Python</div>
-                    <div class="language-tab" data-lang="java">Java</div>
-                    <div class="language-tab" data-lang="csharp">C#</div>
-                </div>
+            </div>
+            <div class="language-tabs">
+                <div class="language-tab active" data-lang="cpp">C++</div>
+                <div class="language-tab" data-lang="python">Python</div>
+                <div class="language-tab" data-lang="java">Java</div>
+                <div class="language-tab" data-lang="csharp">C#</div>
             </div>
         </header>
         
@@ -77,6 +77,239 @@
     
     <script src="challenges.js"></script>
     <script src="savedata.js"></script>
-    <script src="script.js"></script>
+    <script>
+        // Game state
+        let currentLanguage = 'cpp';
+        let currentLevel = 1;
+        let currentChallenge = {};
+        let score = 0;
+        let streak = 0;
+        let currentChallengeIndex = 0;
+
+        // DOM elements
+        const codeDisplay = document.getElementById('code-content');
+        const codeEditor = document.getElementById('code-editor');
+        const submitBtn = document.getElementById('submit-btn');
+        const hintBtn = document.getElementById('hint-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const saveBtn = document.getElementById('save-btn');
+        const messageEl = document.getElementById('message');
+        const diffOutput = document.getElementById('diff-output');
+        const scoreEl = document.getElementById('score');
+        const streakEl = document.getElementById('streak');
+        const expectedOutputEl = document.getElementById('expected-output');
+        const userOutputEl = document.getElementById('user-output');
+        const challengeTitleEl = document.getElementById('challenge-title');
+        const languageTabs = document.querySelectorAll('.language-tab');
+        const levelButtons = document.querySelectorAll('.level-btn');
+
+        // Initialize the game
+        function init() {
+            // Load saved data
+            const savedData = gameSave.load();
+            score = savedData.score || 0;
+            streak = savedData.streak || 0;
+            currentLanguage = savedData.currentLanguage || 'cpp';
+            currentLevel = savedData.currentLevel || 1;
+
+            loadRandomChallenge();
+            updateScoreDisplay();
+            
+            // Event listeners
+            submitBtn.addEventListener('click', checkSolution);
+            hintBtn.addEventListener('click', showHint);
+            nextBtn.addEventListener('click', loadRandomChallenge);
+            resetBtn.addEventListener('click', resetCode);
+            saveBtn.addEventListener('click', saveGame);
+            
+            // Language tabs
+            languageTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    currentLanguage = tab.dataset.lang;
+                    document.querySelector('.language-tab.active').classList.remove('active');
+                    tab.classList.add('active');
+                    loadRandomChallenge();
+                    saveGame();
+                });
+            });
+            
+            // Level buttons
+            levelButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentLevel = parseInt(btn.dataset.level);
+                    document.querySelector('.level-btn.active').classList.remove('active');
+                    btn.classList.add('active');
+                    loadRandomChallenge();
+                    saveGame();
+                });
+            });
+
+            // Set active tabs from saved data
+            document.querySelector(`.language-tab[data-lang="${currentLanguage}"]`).classList.add('active');
+            document.querySelector(`.level-btn[data-level="${currentLevel}"]`).classList.add('active');
+        }
+
+        // Load a random challenge
+        function loadRandomChallenge() {
+            const challenges = codeChallenges[currentLanguage][currentLevel];
+            currentChallengeIndex = Math.floor(Math.random() * challenges.length);
+            currentChallenge = challenges[currentChallengeIndex];
+            
+            codeDisplay.textContent = currentChallenge.broken;
+            codeEditor.value = currentChallenge.broken;
+            expectedOutputEl.textContent = currentChallenge.expectedOutput;
+            challengeTitleEl.textContent = currentChallenge.title;
+            
+            clearFeedback();
+            resetOutput();
+        }
+
+        // Check the user's solution
+        function checkSolution() {
+            const userCode = codeEditor.value.trim();
+            const fixedCode = currentChallenge.fixed.trim();
+            
+            // Simulate output
+            const userOutput = simulateOutput(userCode);
+            userOutputEl.textContent = userOutput;
+            
+            if (userOutput === currentChallenge.expectedOutput) {
+                if (userCode === fixedCode) {
+                    // Perfect match
+                    showFeedback('success', 'Perfect! Code and output both match!');
+                    score += 10 * currentLevel;
+                    streak++;
+                } else {
+                    // Output matches but code style differs
+                    showFeedback('success', 'Output matches! Code could be improved though. +5 points');
+                    score += 5 * currentLevel;
+                    streak++;
+                    showDiff(userCode, fixedCode);
+                }
+            } else {
+                // Incorrect solution
+                showFeedback('error', 'Output doesn\'t match. Try again!');
+                streak = 0;
+                showDiff(userCode, fixedCode);
+            }
+            
+            updateScoreDisplay();
+        }
+
+        // Very simplified output simulation
+        function simulateOutput(code) {
+            try {
+                if (code.includes('"Hello World"') || code.includes("'Hello World'")) {
+                    return "Hello World";
+                }
+                
+                if (code.includes('Resource')) {
+                    if (code.includes('make_unique') || code.includes('delete')) {
+                        return "Resource acquired\nResource used\nResource destroyed\n";
+                    }
+                    return "Resource acquired\nResource used\n";
+                }
+                
+                if (code.includes('numbers') && code.includes('even')) {
+                    if (code.includes('2, 4') || code.includes('2 ,4') || code.includes('[2, 4]')) {
+                        return "2, 4";
+                    }
+                    return "[2, 4]";
+                }
+                
+                // Fallback to expected output if code is similar to solution
+                if (code.includes(currentChallenge.expectedOutput)) {
+                    return currentChallenge.expectedOutput;
+                }
+                
+                return "Output simulation limited in offline mode - check code structure";
+            } catch (e) {
+                return "Error in code: " + e.message;
+            }
+        }
+
+        // Show differences between user code and solution
+        function showDiff(userCode, fixedCode) {
+            const userLines = userCode.split('\n');
+            const fixedLines = fixedCode.split('\n');
+            
+            let diffHTML = '';
+            const maxLines = Math.max(userLines.length, fixedLines.length);
+            
+            for (let i = 0; i < maxLines; i++) {
+                const userLine = userLines[i] || '';
+                const fixedLine = fixedLines[i] || '';
+                
+                if (userLine !== fixedLine) {
+                    diffHTML += `<div class="diff-line diff-removed">Line ${i+1}: ${userLine}</div>`;
+                    diffHTML += `<div class="diff-line diff-added">Line ${i+1}: ${fixedLine}</div>`;
+                }
+            }
+            
+            diffOutput.innerHTML = diffHTML;
+            diffOutput.style.display = diffHTML ? 'block' : 'none';
+        }
+
+        // Show feedback message
+        function showFeedback(type, message) {
+            messageEl.textContent = message;
+            messageEl.className = `message ${type}`;
+            
+            userOutputEl.className = `output-content ${type}-output`;
+        }
+
+        // Clear all feedback
+        function clearFeedback() {
+            messageEl.textContent = '';
+            messageEl.className = 'message';
+            diffOutput.style.display = 'none';
+            diffOutput.innerHTML = '';
+            userOutputEl.className = 'output-content';
+        }
+
+        // Reset the output display
+        function resetOutput() {
+            userOutputEl.textContent = '';
+            userOutputEl.className = 'output-content';
+        }
+
+        // Show a hint
+        function showHint() {
+            showFeedback('info', currentChallenge.hint);
+            score = Math.max(0, score - 3); // Small penalty for hints
+            streak = 0;
+            updateScoreDisplay();
+        }
+
+        // Reset the code editor to original broken code
+        function resetCode() {
+            codeEditor.value = currentChallenge.broken;
+            clearFeedback();
+            resetOutput();
+        }
+
+        // Save game state
+        function saveGame() {
+            const saveData = {
+                score,
+                streak,
+                currentLanguage,
+                currentLevel,
+                completedChallenges: gameSave.load().completedChallenges
+            };
+            gameSave.save(saveData);
+            showFeedback('info', 'Progress saved!');
+        }
+
+        // Update score display
+        function updateScoreDisplay() {
+            scoreEl.textContent = score;
+            streakEl.textContent = streak;
+        }
+
+        // Start the game when page loads
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
 </body>
 </html>
