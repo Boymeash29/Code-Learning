@@ -3,49 +3,53 @@ class GameSave {
         this.currentUser = null;
     }
 
-    // Netlify Identity methods
     async loadUserData(user) {
-        if (!user) return this.loadLocal();
-        
+        this.currentUser = user;
         try {
-            const response = await fetch('/.netlify/functions/get-user-data', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${user.token.access_token}`
-                },
-                body: JSON.stringify({ userId: user.id })
-            });
-            return response.ok ? await response.json() : this.loadLocal();
-        } catch {
+            // Try Netlify first
+            if (user) {
+                const response = await fetch('/.netlify/functions/get-user-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${user.token.access_token}`
+                    },
+                    body: JSON.stringify({ userId: user.id })
+                });
+                if (response.ok) return await response.json();
+            }
+            // Fallback to local storage
+            return this.loadLocal();
+        } catch (error) {
+            console.error('Error loading data:', error);
             return this.loadLocal();
         }
     }
 
-    async saveUserData(user, data) {
-        this.saveLocal(data); // Always save locally as fallback
+    async saveUserData(data) {
+        // Always save locally first
+        this.saveLocal(data);
         
-        if (!user) return false;
-        
-        try {
-            await fetch('/.netlify/functions/save-user-data', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${user.token.access_token}`
-                },
-                body: JSON.stringify({
-                    userId: user.id,
-                    gameData: data
-                })
-            });
-            return true;
-        } catch {
-            return false;
+        // Try to save to Netlify if logged in
+        if (this.currentUser) {
+            try {
+                await fetch('/.netlify/functions/save-user-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${this.currentUser.token.access_token}`
+                    },
+                    body: JSON.stringify({
+                        userId: this.currentUser.id,
+                        gameData: data
+                    })
+                });
+            } catch (error) {
+                console.error('Error saving to Netlify:', error);
+            }
         }
     }
 
-    // Local storage fallback
     loadLocal() {
         const data = localStorage.getItem('codeFixerGame');
         return data ? JSON.parse(data) : {
