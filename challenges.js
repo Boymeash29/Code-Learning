@@ -9,9 +9,8 @@ class CodeFixerGame {
             streak: 0,
             user: null
         };
-        
-        // DOM elements
-        this.elements = {
+
+        this.domElements = {
             loginBtn: document.getElementById('login-btn'),
             logoutBtn: document.getElementById('logout-btn'),
             userInfo: document.getElementById('user-info'),
@@ -24,7 +23,14 @@ class CodeFixerGame {
             userOutput: document.getElementById('user-output'),
             messageEl: document.getElementById('message'),
             diffOutput: document.getElementById('diff-output'),
-            challengeTitle: document.getElementById('challenge-title')
+            challengeTitle: document.getElementById('challenge-title'),
+            submitBtn: document.getElementById('submit-btn'),
+            hintBtn: document.getElementById('hint-btn'),
+            nextBtn: document.getElementById('next-btn'),
+            resetBtn: document.getElementById('reset-btn'),
+            saveBtn: document.getElementById('save-btn'),
+            levelBtns: document.querySelectorAll('.level-btn'),
+            languageTabs: document.querySelectorAll('.language-tab')
         };
     }
 
@@ -50,18 +56,18 @@ class CodeFixerGame {
                 this.handleLogout();
             });
 
-            this.elements.loginBtn.addEventListener('click', () => 
-                window.netlifyIdentity.open()
-            );
+            this.domElements.loginBtn.addEventListener('click', () => {
+                window.netlifyIdentity.open();
+            });
         }
     }
 
     async handleLogin(user) {
         this.state.user = user;
-        this.elements.userEmail.textContent = user.email;
-        this.elements.userInfo.style.display = 'flex';
-        this.elements.loginBtn.style.display = 'none';
-        
+        this.domElements.userEmail.textContent = user.email;
+        this.domElements.userInfo.style.display = 'flex';
+        this.domElements.loginBtn.style.display = 'none';
+
         const savedData = await this.gameSave.loadUserData(user);
         if (savedData) {
             this.state.score = savedData.score || 0;
@@ -69,21 +75,133 @@ class CodeFixerGame {
             this.state.currentLanguage = savedData.currentLanguage || 'cpp';
             this.state.currentLevel = savedData.currentLevel || 1;
             this.updateScoreDisplay();
+            this.loadRandomChallenge();
         }
     }
 
     handleLogout() {
         this.state.user = null;
-        this.elements.userInfo.style.display = 'none';
-        this.elements.loginBtn.style.display = 'block';
+        this.domElements.userInfo.style.display = 'none';
+        this.domElements.loginBtn.style.display = 'block';
     }
 
-    // ... rest of your game methods (loadRandomChallenge, checkSolution, etc.)
-    // These remain exactly the same as your original game logic
-    // Just replace localStorage calls with this.gameSave methods
+    setupEventListeners() {
+        // Language tabs
+        this.domElements.languageTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                this.state.currentLanguage = tab.dataset.lang;
+                document.querySelector('.language-tab.active').classList.remove('active');
+                tab.classList.add('active');
+                this.loadRandomChallenge();
+            });
+        });
+
+        // Level buttons
+        this.domElements.levelBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.state.currentLevel = parseInt(btn.dataset.level);
+                document.querySelector('.level-btn.active').classList.remove('active');
+                btn.classList.add('active');
+                this.loadRandomChallenge();
+            });
+        });
+
+        // Game buttons
+        this.domElements.submitBtn.addEventListener('click', () => this.checkSolution());
+        this.domElements.hintBtn.addEventListener('click', () => this.showHint());
+        this.domElements.nextBtn.addEventListener('click', () => this.loadRandomChallenge());
+        this.domElements.resetBtn.addEventListener('click', () => this.resetCode());
+        this.domElements.saveBtn.addEventListener('click', () => this.saveGame());
+    }
+
+    loadRandomChallenge() {
+        const challenges = codeChallenges[this.state.currentLanguage][this.state.currentLevel];
+        const randomIndex = Math.floor(Math.random() * challenges.length);
+        this.state.currentChallenge = challenges[randomIndex];
+        
+        this.domElements.codeDisplay.textContent = this.state.currentChallenge.broken;
+        this.domElements.codeEditor.value = this.state.currentChallenge.broken;
+        this.domElements.expectedOutput.textContent = this.state.currentChallenge.expectedOutput;
+        this.domElements.challengeTitle.textContent = this.state.currentChallenge.title;
+        
+        this.clearFeedback();
+    }
+
+    checkSolution() {
+        const userCode = this.domElements.codeEditor.value.trim();
+        const fixedCode = this.state.currentChallenge.fixed.trim();
+        
+        // Simple validation
+        if (userCode === fixedCode) {
+            this.state.score += 10 * this.state.currentLevel;
+            this.state.streak++;
+            this.showFeedback('success', 'Correct! Well done!');
+        } else {
+            this.state.streak = 0;
+            this.showFeedback('error', 'Not quite right. Try again!');
+            this.showDiff(userCode, fixedCode);
+        }
+        
+        this.updateScoreDisplay();
+    }
+
+    showFeedback(type, message) {
+        this.domElements.messageEl.textContent = message;
+        this.domElements.messageEl.className = `message ${type}`;
+    }
+
+    clearFeedback() {
+        this.domElements.messageEl.textContent = '';
+        this.domElements.messageEl.className = 'message';
+        this.domElements.diffOutput.style.display = 'none';
+        this.domElements.diffOutput.innerHTML = '';
+    }
+
+    showDiff(userCode, fixedCode) {
+        // Simple diff implementation
+        let diffHTML = '';
+        const userLines = userCode.split('\n');
+        const fixedLines = fixedCode.split('\n');
+        
+        for (let i = 0; i < Math.max(userLines.length, fixedLines.length); i++) {
+            if (userLines[i] !== fixedLines[i]) {
+                diffHTML += `<div class="diff-line diff-removed">Line ${i+1}: ${userLines[i] || ''}</div>`;
+                diffHTML += `<div class="diff-line diff-added">Line ${i+1}: ${fixedLines[i] || ''}</div>`;
+            }
+        }
+        
+        this.domElements.diffOutput.innerHTML = diffHTML;
+        this.domElements.diffOutput.style.display = diffHTML ? 'block' : 'none';
+    }
+
+    showHint() {
+        this.showFeedback('info', this.state.currentChallenge.hint);
+        this.state.score = Math.max(0, this.state.score - 3);
+        this.updateScoreDisplay();
+    }
+
+    resetCode() {
+        this.domElements.codeEditor.value = this.state.currentChallenge.broken;
+        this.clearFeedback();
+    }
+
+    async saveGame() {
+        const saveData = {
+            score: this.state.score,
+            streak: this.state.streak,
+            currentLanguage: this.state.currentLanguage,
+            currentLevel: this.state.currentLevel
+        };
+        
+        await this.gameSave.saveUserData(saveData);
+        this.showFeedback('success', 'Progress saved!');
+    }
+
+    updateScoreDisplay() {
+        this.domElements.scoreEl.textContent = this.state.score;
+        this.domElements.streakEl.textContent = this.state.streak;
+    }
 }
-
-
 
 
 // Extensive code challenges for all languages
