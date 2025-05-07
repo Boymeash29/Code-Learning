@@ -1,3 +1,91 @@
+class CodeFixerGame {
+    constructor(gameSave) {
+        this.gameSave = gameSave;
+        this.state = {
+            currentLanguage: 'cpp',
+            currentLevel: 1,
+            currentChallenge: {},
+            score: 0,
+            streak: 0,
+            user: null
+        };
+        
+        // DOM elements
+        this.elements = {
+            loginBtn: document.getElementById('login-btn'),
+            logoutBtn: document.getElementById('logout-btn'),
+            userInfo: document.getElementById('user-info'),
+            userEmail: document.getElementById('user-email'),
+            scoreEl: document.getElementById('score'),
+            streakEl: document.getElementById('streak'),
+            codeEditor: document.getElementById('code-editor'),
+            codeDisplay: document.getElementById('code-content'),
+            expectedOutput: document.getElementById('expected-output'),
+            userOutput: document.getElementById('user-output'),
+            messageEl: document.getElementById('message'),
+            diffOutput: document.getElementById('diff-output'),
+            challengeTitle: document.getElementById('challenge-title')
+        };
+    }
+
+    init() {
+        this.initNetlifyIdentity();
+        this.setupEventListeners();
+        this.loadRandomChallenge();
+    }
+
+    initNetlifyIdentity() {
+        if (window.netlifyIdentity) {
+            window.netlifyIdentity.on('init', user => {
+                this.state.user = user;
+                if (user) this.handleLogin(user);
+            });
+
+            window.netlifyIdentity.on('login', user => {
+                this.handleLogin(user);
+                window.netlifyIdentity.close();
+            });
+
+            window.netlifyIdentity.on('logout', () => {
+                this.handleLogout();
+            });
+
+            this.elements.loginBtn.addEventListener('click', () => 
+                window.netlifyIdentity.open()
+            );
+        }
+    }
+
+    async handleLogin(user) {
+        this.state.user = user;
+        this.elements.userEmail.textContent = user.email;
+        this.elements.userInfo.style.display = 'flex';
+        this.elements.loginBtn.style.display = 'none';
+        
+        const savedData = await this.gameSave.loadUserData(user);
+        if (savedData) {
+            this.state.score = savedData.score || 0;
+            this.state.streak = savedData.streak || 0;
+            this.state.currentLanguage = savedData.currentLanguage || 'cpp';
+            this.state.currentLevel = savedData.currentLevel || 1;
+            this.updateScoreDisplay();
+        }
+    }
+
+    handleLogout() {
+        this.state.user = null;
+        this.elements.userInfo.style.display = 'none';
+        this.elements.loginBtn.style.display = 'block';
+    }
+
+    // ... rest of your game methods (loadRandomChallenge, checkSolution, etc.)
+    // These remain exactly the same as your original game logic
+    // Just replace localStorage calls with this.gameSave methods
+}
+
+
+
+
 // Extensive code challenges for all languages
 const codeChallenges = {
     cpp: {
