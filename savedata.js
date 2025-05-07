@@ -1,49 +1,62 @@
 class GameSave {
     constructor() {
-        this.saveKey = 'codeFixerGameSave';
-        this.defaultData = {
+        this.currentUser = null;
+    }
+
+    // Netlify Identity methods
+    async loadUserData(user) {
+        if (!user) return this.loadLocal();
+        
+        try {
+            const response = await fetch('/.netlify/functions/get-user-data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token.access_token}`
+                },
+                body: JSON.stringify({ userId: user.id })
+            });
+            return response.ok ? await response.json() : this.loadLocal();
+        } catch {
+            return this.loadLocal();
+        }
+    }
+
+    async saveUserData(user, data) {
+        this.saveLocal(data); // Always save locally as fallback
+        
+        if (!user) return false;
+        
+        try {
+            await fetch('/.netlify/functions/save-user-data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token.access_token}`
+                },
+                body: JSON.stringify({
+                    userId: user.id,
+                    gameData: data
+                })
+            });
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    // Local storage fallback
+    loadLocal() {
+        const data = localStorage.getItem('codeFixerGame');
+        return data ? JSON.parse(data) : {
             score: 0,
             streak: 0,
             currentLanguage: 'cpp',
-            currentLevel: 1,
-            completedChallenges: {}
+            currentLevel: 1
         };
     }
 
-    load() {
-        const savedData = localStorage.getItem(this.saveKey);
-        if (savedData) {
-            return JSON.parse(savedData);
-        }
-        return {...this.defaultData};
-    }
-
-    save(data) {
-        localStorage.setItem(this.saveKey, JSON.stringify(data));
-    }
-
-    reset() {
-        localStorage.removeItem(this.saveKey);
-        return {...this.defaultData};
-    }
-
-    markChallengeCompleted(language, level, challengeId) {
-        const saveData = this.load();
-        
-        if (!saveData.completedChallenges[language]) {
-            saveData.completedChallenges[language] = {};
-        }
-        
-        if (!saveData.completedChallenges[language][level]) {
-            saveData.completedChallenges[language][level] = [];
-        }
-        
-        if (!saveData.completedChallenges[language][level].includes(challengeId)) {
-            saveData.completedChallenges[language][level].push(challengeId);
-        }
-        
-        this.save(saveData);
+    saveLocal(data) {
+        localStorage.setItem('codeFixerGame', JSON.stringify(data));
     }
 }
-
-const gameSave = new GameSave();
