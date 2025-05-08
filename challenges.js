@@ -953,5 +953,224 @@ const codeChallenges = {
                 expectedOutput: "Hello World"
             }
         ]
+    },
+    c: {
+        1: [
+            {
+                title: "Basic Output",
+                broken: `#include <stdio.h>\n\nint main() {\n    print("Hello World");\n    return 0;\n}`,
+                fixed: `#include <stdio.h>\n\nint main() {\n    printf("Hello World");\n    return 0;\n}`,
+                hint: "Use printf instead of print in C",
+                expectedOutput: "Hello World"
+            },
+            {
+                title: "Variable Declaration",
+                broken: `#include <stdio.h>\n\nint main() {\n    num = 5;\n    printf("%d", num);\n    return 0;\n}`,
+                fixed: `#include <stdio.h>\n\nint main() {\n    int num = 5;\n    printf("%d", num);\n    return 0;\n}`,
+                hint: "Variables must be declared with types in C",
+                expectedOutput: "5"
+            },
+            {
+                title: "For Loop Syntax",
+                broken: `#include <stdio.h>\n\nint main() {\n    for (int i = 0; i < 5 i++) {\n        printf("%d ", i);\n    }\n    return 0;\n}`,
+                fixed: `#include <stdio.h>\n\nint main() {\n    for (int i = 0; i < 5; i++) {\n        printf("%d ", i);\n    }\n    return 0;\n}`,
+                hint: "Check the semicolons in the for loop",
+                expectedOutput: "0 1 2 3 4 "
+            },
+            {
+                title: "Pointer Basics",
+                broken: `#include <stdio.h>\n\nint main() {\n    int x = 5;\n    int *ptr;\n    ptr = x;\n    printf("%d", *ptr);\n    return 0;\n}`,
+                fixed: `#include <stdio.h>\n\nint main() {\n    int x = 5;\n    int *ptr;\n    ptr = &x;\n    printf("%d", *ptr);\n    return 0;\n}`,
+                hint: "Pointers need address-of operator (&)",
+                expectedOutput: "5"
+            },
+            {
+                title: "Array Initialization",
+                broken: `#include <stdio.h>\n\nint main() {\n    int arr[3] = {1, 2, 3};\n    printf("%d", arr[3]);\n    return 0;\n}`,
+                fixed: `#include <stdio.h>\n\nint main() {\n    int arr[3] = {1, 2, 3};\n    printf("%d", arr[2]);\n    return 0;\n}`,
+                hint: "Array indices start at 0",
+                expectedOutput: "3"
+            }
+        ],
+        2: [
+            {
+                title: "String Handling",
+                broken: `#include <stdio.h>\n\nint main() {\n    char name[] = "Alice";\n    name = "Bob";\n    printf("%s", name);\n    return 0;\n}`,
+                fixed: `#include <stdio.h>\n#include <string.h>\n\nint main() {\n    char name[10] = "Alice";\n    strcpy(name, "Bob");\n    printf("%s", name);\n    return 0;\n}`,
+                hint: "Use strcpy to modify strings",
+                expectedOutput: "Bob"
+            },
+            {
+                title: "Function Definition",
+                broken: `#include <stdio.h>\n\nint main() {\n    printf("%d", square(5));\n    return 0;\n}\n\nint square(int n) {\n    return n * n;\n}`,
+                fixed: `#include <stdio.h>\n\nint square(int n);\n\nint main() {\n    printf("%d", square(5));\n    return 0;\n}\n\nint square(int n) {\n    return n * n;\n}`,
+                hint: "Functions need declarations when defined after use",
+                expectedOutput: "25"
+            },
+            {
+                title: "Struct Usage",
+                broken: `#include <stdio.h>\n\nint main() {\n    struct Person {\n        char name[20];\n        int age;\n    };\n    \n    Person p = {"Alice", 25};\n    printf("%s is %d", p.name, p.age);\n    return 0;\n}`,
+                fixed: `#include <stdio.h>\n\nstruct Person {\n    char name[20];\n    int age;\n};\n\nint main() {\n    struct Person p = {"Alice", 25};\n    printf("%s is %d", p.name, p.age);\n    return 0;\n}`,
+                hint: "Structs need to be defined before use",
+                expectedOutput: "Alice is 25"
+            },
+            {
+                title: "Memory Allocation",
+                broken: `#include <stdio.h>\n#include <stdlib.h>\n\nint main() {\n    int *arr = malloc(5 * sizeof(int));\n    for (int i = 0; i < 5; i++) {\n        arr[i] = i + 1;\n    }\n    printf("%d", arr[2]);\n    return 0;\n}`,
+                fixed: `#include <stdio.h>\n#include <stdlib.h>\n\nint main() {\n    int *arr = malloc(5 * sizeof(int));\n    for (int i = 0; i < 5; i++) {\n        arr[i] = i + 1;\n    }\n    printf("%d", arr[2]);\n    free(arr);\n    return 0;\n}`,
+                hint: "Don't forget to free allocated memory",
+                expectedOutput: "3"
+            },
+            {
+                title: "File Handling",
+                broken: `#include <stdio.h>\n\nint main() {\n    FILE *file = fopen("test.txt", "r");\n    printf("%d", file != NULL);\n    return 0;\n}`,
+                fixed: `#include <stdio.h>\n\nint main() {\n    FILE *file = fopen("test.txt", "r");\n    printf("%d", file != NULL);\n    if (file) fclose(file);\n    return 0;\n}`,
+                hint: "Always close files after opening",
+                expectedOutput: "0"
+            }
+        ],
+        3: [
+            {
+                title: "Function Pointers",
+                broken: `#include <stdio.h>\n\nint add(int a, int b) { return a + b; }\nint sub(int a, int b) { return a - b; }\n\nint main() {\n    int (*operation)(int,int);\n    operation = add;\n    printf("%d ", operation(5,3));\n    operation = sub;\n    printf("%d", operation(5,3));\n    return 0;\n}`,
+                fixed: `#include <stdio.h>\n\nint add(int a, int b) { return a + b; }\nint sub(int a, int b) { return a - b; }\n\nint main() {\n    int (*operation)(int,int);\n    operation = add;\n    printf("%d ", operation(5,3));\n    operation = sub;\n    printf("%d", operation(5,3));\n    return 0;\n}`,
+                hint: "This code is correct! Function pointers are powerful",
+                expectedOutput: "8 2"
+            },
+            {
+                title: "Recursion",
+                broken: `#include <stdio.h>\n\nint factorial(int n) {\n    if (n == 0) return 0;\n    return n * factorial(n-1);\n}\n\nint main() {\n    printf("%d", factorial(5));\n    return 0;\n}`,
+                fixed: `#include <stdio.h>\n\nint factorial(int n) {\n    if (n == 0) return 1;\n    return n * factorial(n-1);\n}\n\nint main() {\n    printf("%d", factorial(5));\n    return 0;\n}`,
+                hint: "Base case for factorial should return 1",
+                expectedOutput: "120"
+            }
+            // More C challenges...
+        ],
+        4: [
+            {
+                title: "Bit Operations",
+                broken: `#include <stdio.h>\n\nint main() {\n    unsigned char flags = 0x00;\n    flags = flags | 0x01;\n    flags = flags | 0x02;\n    printf("%d", flags);\n    return 0;\n}`,
+                fixed: `#include <stdio.h>\n\nint main() {\n    unsigned char flags = 0x00;\n    flags |= 0x01;\n    flags |= 0x02;\n    printf("%d", flags);\n    return 0;\n}`,
+                hint: "Use compound assignment operators for bit operations",
+                expectedOutput: "3"
+            }
+            // More C challenges...
+        ],
+        5: [
+            {
+                title: "Multi-file Compilation",
+                broken: `// main.c\n#include <stdio.h>\n#include "math.h"\n\nint main() {\n    printf("%d", square(5));\n    return 0;\n}\n\n// math.c\nint square(int n) {\n    return n * n;\n}`,
+                fixed: `// main.c\n#include <stdio.h>\n#include "math.h"\n\nint main() {\n    printf("%d", square(5));\n    return 0;\n}\n\n// math.h\nint square(int n);\n\n// math.c\nint square(int n) {\n    return n * n;\n}`,
+                hint: "Need header file for function declaration",
+                expectedOutput: "25"
+            }
+        ]
+    },
+
+    htmljs: {
+        1: [
+            {
+                title: "Basic HTML Structure",
+                broken: `<html>\n<head>\n<title>Page</title>\n</head>\n<body>\n<h1>Hello</h1>\n</body>`,
+                fixed: `<!DOCTYPE html>\n<html>\n<head>\n<title>Page</title>\n</head>\n<body>\n<h1>Hello</h1>\n</body>\n</html>`,
+                hint: "HTML documents need DOCTYPE and proper closing tags",
+                expectedOutput: "Hello (in browser)"
+            },
+            {
+                title: "JavaScript Alert",
+                broken: `<script>\nalert('Hello World')\n</script>`,
+                fixed: `<script>\nalert('Hello World');\n</script>`,
+                hint: "JavaScript statements should end with semicolons",
+                expectedOutput: "Alert with 'Hello World'"
+            },
+            {
+                title: "Event Listener",
+                broken: `<button id="myBtn">Click me</button>\n<script>\ndocument.getElementById('myBtn').onclick = function() {\n    console.log('Clicked')\n}`,
+                fixed: `<button id="myBtn">Click me</button>\n<script>\ndocument.getElementById('myBtn').addEventListener('click', function() {\n    console.log('Clicked');\n});\n</script>`,
+                hint: "Use addEventListener for better practice",
+                expectedOutput: "'Clicked' in console when button pressed"
+            },
+            {
+                title: "DOM Manipulation",
+                broken: `<div id="output"></div>\n<script>\ndocument.querySelector('#output').innerHTML = 'Hello'`,
+                fixed: `<div id="output"></div>\n<script>\ndocument.querySelector('#output').innerHTML = 'Hello';\n</script>`,
+                hint: "Don't forget script closing tag and semicolons",
+                expectedOutput: "Div contains 'Hello'"
+            },
+            {
+                title: "CSS Styling",
+                broken: `<div style="color=red">Hello</div>`,
+                fixed: `<div style="color:red">Hello</div>`,
+                hint: "CSS properties use colons, not equals signs",
+                expectedOutput: "Red 'Hello' text"
+            }
+        ],
+        2: [
+            {
+                title: "Form Handling",
+                broken: `<form>\n<input type="text" id="name">\n<button type="submit">Submit</button>\n</form>\n<script>\ndocument.querySelector('form').onsubmit = function() {\n    alert('Submitted');\n}`,
+                fixed: `<form>\n<input type="text" id="name">\n<button type="submit">Submit</button>\n</form>\n<script>\ndocument.querySelector('form').addEventListener('submit', function(e) {\n    e.preventDefault();\n    alert('Submitted');\n});\n</script>`,
+                hint: "Prevent default form submission behavior",
+                expectedOutput: "Alert without page reload"
+            },
+            {
+                title: "Array Methods",
+                broken: `<script>\nconst nums = [1, 2, 3];\nconst doubled = nums.map(num => {\n    return num * 2\n}\nconsole.log(doubled);\n</script>`,
+                fixed: `<script>\nconst nums = [1, 2, 3];\nconst doubled = nums.map(num => {\n    return num * 2;\n});\nconsole.log(doubled);\n</script>`,
+                hint: "Check your parentheses and semicolons",
+                expectedOutput: "[2, 4, 6] in console"
+            },
+            {
+                title: "Template Literals",
+                broken: `<script>\nconst name = 'Alice';\nconsole.log('Hello ' + name + '!');\n</script>`,
+                fixed: `<script>\nconst name = 'Alice';\nconsole.log(`Hello ${name}!`);\n</script>`,
+                hint: "Use template literals for cleaner string interpolation",
+                expectedOutput: "Hello Alice! in console"
+            },
+            {
+                title: "Fetch API",
+                broken: `<script>\nfetch('https://api.example.com/data')\n    .then(response => response.json)\n    .then(data => console.log(data));\n</script>`,
+                fixed: `<script>\nfetch('https://api.example.com/data')\n    .then(response => response.json())\n    .then(data => console.log(data))\n    .catch(error => console.error(error));\n</script>`,
+                hint: "json() is a method, and always handle errors",
+                expectedOutput: "API data in console"
+            },
+            {
+                title: "Local Storage",
+                broken: `<script>\nlocalStorage.setItem('name', 'Alice');\nconst name = localStorage.getItem(name);\nconsole.log(name);\n</script>`,
+                fixed: `<script>\nlocalStorage.setItem('name', 'Alice');\nconst name = localStorage.getItem('name');\nconsole.log(name);\n</script>`,
+                hint: "getItem requires the key as a string",
+                expectedOutput: "Alice in console"
+            }
+        ],
+        3: [
+            {
+                title: "ES6 Classes",
+                broken: `<script>\nclass Person {\n    constructor(name) {\n        name = name;\n    }\n    greet() {\n        return 'Hello ' + name;\n    }\n}\nconst p = new Person('Alice');\nconsole.log(p.greet());\n</script>`,
+                fixed: `<script>\nclass Person {\n    constructor(name) {\n        this.name = name;\n    }\n    greet() {\n        return 'Hello ' + this.name;\n    }\n}\nconst p = new Person('Alice');\nconsole.log(p.greet());\n</script>`,
+                hint: "Use 'this' to reference instance properties",
+                expectedOutput: "Hello Alice in console"
+            }
+            // More HTML/JS challenges...
+        ],
+        4: [
+            {
+                title: "Async/Await",
+                broken: `<script>\nasync function getData() {\n    const response = fetch('https://api.example.com/data');\n    const data = response.json();\n    console.log(data);\n}\ngetData();\n</script>`,
+                fixed: `<script>\nasync function getData() {\n    const response = await fetch('https://api.example.com/data');\n    const data = await response.json();\n    console.log(data);\n}\ngetData();\n</script>`,
+                hint: "Don't forget await keywords",
+                expectedOutput: "API data in console"
+            }
+            // More HTML/JS challenges...
+        ],
+        5: [
+            {
+                title: "Web Components",
+                broken: `<script>\nclass MyElement extends HTMLElement {\n    connectedCallback() {\n        this.innerHTML = '<h1>Hello</h1>';\n    }\n}\ncustomElements.define('my-element', MyElement);\n</script>`,
+                fixed: `<script>\nclass MyElement extends HTMLElement {\n    constructor() {\n        super();\n    }\n    connectedCallback() {\n        this.innerHTML = '<h1>Hello</h1>';\n    }\n}\ncustomElements.define('my-element', MyElement);\n</script>`,
+                hint: "Custom elements need constructor with super()",
+                expectedOutput: "<my-element> with 'Hello' heading"
+            }
+            // More advanced HTML/JS challenges...
+        ]
     }
 };
