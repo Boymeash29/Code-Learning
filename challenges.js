@@ -1043,8 +1043,28 @@ const codeChallenges = {
                 fixed: `#include <stdio.h>\n\nint factorial(int n) {\n    if (n == 0) return 1;\n    return n * factorial(n-1);\n}\n\nint main() {\n    printf("%d", factorial(5));\n    return 0;\n}`,
                 hint: "Base case for factorial should return 1",
                 expectedOutput: "120"
+            },
+            {
+                title: "Typedef",
+                broken: `#include <stdio.h>\n\nstruct Point {\n    int x;\n    int y;\n};\n\nint main() {\n    struct Point p = {3, 4};\n    printf("%d,%d", p.x, p.y);\n    return 0;\n}`,
+                fixed: `#include <stdio.h>\n\ntypedef struct {\n    int x;\n    int y;\n} Point;\n\nint main() {\n    Point p = {3, 4};\n    printf("%d,%d", p.x, p.y);\n    return 0;\n}`,
+                hint: "Use typedef to simplify struct usage",
+                expectedOutput: "3,4"
+            },
+            {
+                title: "Command Line Arguments",
+                broken: `#include <stdio.h>\n\nint main() {\n    printf("Program name: %s", argv[0]);\n    return 0;\n}`,
+                fixed: `#include <stdio.h>\n\nint main(int argc, char *argv[]) {\n    printf("Program name: %s", argv[0]);\n    return 0;\n}`,
+                hint: "Need to properly declare main parameters for command line args",
+                expectedOutput: "Program name: [executable name]"
+            },
+            {
+                title: "Enum Usage",
+                broken: `#include <stdio.h>\n\nint main() {\n    enum Color {RED, GREEN, BLUE};\n    printf("%d", GREEN);\n    return 0;\n}`,
+                fixed: `#include <stdio.h>\n\nint main() {\n    enum Color {RED, GREEN, BLUE};\n    enum Color c = GREEN;\n    printf("%d", c);\n    return 0;\n}`,
+                hint: "While the original works, it's better to use enum variables",
+                expectedOutput: "1"
             }
-            // More C challenges...
         ],
         4: [
             {
@@ -1053,8 +1073,35 @@ const codeChallenges = {
                 fixed: `#include <stdio.h>\n\nint main() {\n    unsigned char flags = 0x00;\n    flags |= 0x01;\n    flags |= 0x02;\n    printf("%d", flags);\n    return 0;\n}`,
                 hint: "Use compound assignment operators for bit operations",
                 expectedOutput: "3"
+            },
+            {
+                title: "Union",
+                broken: `#include <stdio.h>\n\nstruct Data {\n    int i;\n    float f;\n};\n\nint main() {\n    struct Data data;\n    data.i = 10;\n    data.f = 3.14;\n    printf("%d %f", data.i, data.f);\n    return 0;\n}`,
+                fixed: `#include <stdio.h>\n\nunion Data {\n    int i;\n    float f;\n};\n\nint main() {\n    union Data data;\n    data.i = 10;\n    printf("%d ", data.i);\n    data.f = 3.14;\n    printf("%f", data.f);\n    return 0;\n}`,
+                hint: "Use union when you need to store different types in same memory location",
+                expectedOutput: "10 3.140000"
+            },
+            {
+                title: "Static Variables",
+                broken: `#include <stdio.h>\n\nvoid counter() {\n    int count = 0;\n    count++;\n    printf("%d ", count);\n}\n\nint main() {\n    counter();\n    counter();\n    counter();\n    return 0;\n}`,
+                fixed: `#include <stdio.h>\n\nvoid counter() {\n    static int count = 0;\n    count++;\n    printf("%d ", count);\n}\n\nint main() {\n    counter();\n    counter();\n    counter();\n    return 0;\n}`,
+                hint: "Use static to preserve variable value between function calls",
+                expectedOutput: "1 2 3"
+            },
+            {
+                title: "Macros",
+                broken: `#include <stdio.h>\n\nint square(int x) {\n    return x * x;\n}\n\nint main() {\n    printf("%d", square(5));\n    return 0;\n}`,
+                fixed: `#include <stdio.h>\n\n#define SQUARE(x) ((x) * (x))\n\nint main() {\n    printf("%d", SQUARE(5));\n    return 0;\n}`,
+                hint: "Use macros for simple function-like operations",
+                expectedOutput: "25"
+            },
+            {
+                title: "Const Correctness",
+                broken: `#include <stdio.h>\n\nvoid print(int *arr, int size) {\n    for (int i = 0; i < size; i++) {\n        arr[i] = i;  // Trying to modify\n        printf("%d ", arr[i]);\n    }\n}\n\nint main() {\n    int nums[] = {1, 2, 3};\n    print(nums, 3);\n    return 0;\n}`,
+                fixed: `#include <stdio.h>\n\nvoid print(const int *arr, int size) {\n    for (int i = 0; i < size; i++) {\n        printf("%d ", arr[i]);\n    }\n}\n\nint main() {\n    int nums[] = {1, 2, 3};\n    print(nums, 3);\n    return 0;\n}`,
+                hint: "Use const to prevent modification of data",
+                expectedOutput: "1 2 3"
             }
-            // More C challenges...
         ],
         5: [
             {
@@ -1063,10 +1110,37 @@ const codeChallenges = {
                 fixed: `// main.c\n#include <stdio.h>\n#include "math.h"\n\nint main() {\n    printf("%d", square(5));\n    return 0;\n}\n\n// math.h\nint square(int n);\n\n// math.c\nint square(int n) {\n    return n * n;\n}`,
                 hint: "Need header file for function declaration",
                 expectedOutput: "25"
+            },
+            {
+                title: "Function Pointers in Struct",
+                broken: `#include <stdio.h>\n\nstruct Operation {\n    int (*op)(int, int);\n};\n\nint add(int a, int b) { return a + b; }\n\nint main() {\n    struct Operation o;\n    o.op = add;\n    printf("%d", o.op(2, 3));\n    return 0;\n}`,
+                fixed: `#include <stdio.h>\n\nstruct Operation {\n    int (*op)(int, int);\n};\n\nint add(int a, int b) { return a + b; }\n\nint main() {\n    struct Operation o;\n    o.op = add;\n    printf("%d", o.op(2, 3));\n    return 0;\n}`,
+                hint: "This code is correct! Shows function pointers in structs",
+                expectedOutput: "5"
+            },
+            {
+                title: "Variadic Functions",
+                broken: `#include <stdio.h>\n\nvoid printNumbers(int count, ...) {\n    va_list args;\n    va_start(args, count);\n    \n    for (int i = 0; i < count; i++) {\n        printf("%d ", va_arg(args, int));\n    }\n    \n    va_end(args);\n}\n\nint main() {\n    printNumbers(3, 1, 2, 3);\n    return 0;\n}`,
+                fixed: `#include <stdio.h>\n#include <stdarg.h>\n\nvoid printNumbers(int count, ...) {\n    va_list args;\n    va_start(args, count);\n    \n    for (int i = 0; i < count; i++) {\n        printf("%d ", va_arg(args, int));\n    }\n    \n    va_end(args);\n}\n\nint main() {\n    printNumbers(3, 1, 2, 3);\n    return 0;\n}`,
+                hint: "Need stdarg.h for variadic functions",
+                expectedOutput: "1 2 3"
+            },
+            {
+                title: "Bit Fields",
+                broken: `#include <stdio.h>\n\nstruct {\n    unsigned int age;\n    unsigned int height;\n} person;\n\nint main() {\n    person.age = 25;\n    person.height = 180;\n    printf("%d %d", person.age, person.height);\n    return 0;\n}`,
+                fixed: `#include <stdio.h>\n\nstruct {\n    unsigned int age : 5;   // 5 bits for age (0-31)\n    unsigned int height : 8; // 8 bits for height (0-255)\n} person;\n\nint main() {\n    person.age = 25;\n    person.height = 180;\n    printf("%d %d", person.age, person.height);\n    return 0;\n}`,
+                hint: "Use bit fields to save memory when you know value ranges",
+                expectedOutput: "25 180"
+            },
+            {
+                title: "Inline Assembly",
+                broken: `#include <stdio.h>\n\nint main() {\n    int a = 5, b = 10, result;\n    result = a + b;\n    printf("%d", result);\n    return 0;\n}`,
+                fixed: `#include <stdio.h>\n\nint main() {\n    int a = 5, b = 10, result;\n    \n    asm("addl %%ebx, %%eax;"\n        : "=a" (result)\n        : "a" (a), "b" (b)\n    );\n    \n    printf("%d", result);\n    return 0;\n}`,
+                hint: "Use inline assembly for low-level operations",
+                expectedOutput: "15"
             }
         ]
     },
-
     htmljs: {
         1: [
             {
@@ -1123,7 +1197,7 @@ const codeChallenges = {
             {
                 title: "Template Literals",
                 broken: `<script>\nconst name = 'Alice';\nconsole.log('Hello ' + name + '!');\n</script>`,
-                fixed: `<script>\nconst name = 'Alice';\nconsole.log(`Hello ${name}!`);\n</script>`,
+                fixed: `<script>\nconst name = 'Alice';\nconsole.log(\`Hello \${name}!\`);\n</script>`,
                 hint: "Use template literals for cleaner string interpolation",
                 expectedOutput: "Hello Alice! in console"
             },
@@ -1149,8 +1223,35 @@ const codeChallenges = {
                 fixed: `<script>\nclass Person {\n    constructor(name) {\n        this.name = name;\n    }\n    greet() {\n        return 'Hello ' + this.name;\n    }\n}\nconst p = new Person('Alice');\nconsole.log(p.greet());\n</script>`,
                 hint: "Use 'this' to reference instance properties",
                 expectedOutput: "Hello Alice in console"
+            },
+            {
+                title: "Arrow Functions",
+                broken: `<script>\nconst numbers = [1, 2, 3];\nconst squared = numbers.map(function(n) {\n    return n * n;\n});\nconsole.log(squared);\n</script>`,
+                fixed: `<script>\nconst numbers = [1, 2, 3];\nconst squared = numbers.map(n => n * n);\nconsole.log(squared);\n</script>`,
+                hint: "Use arrow functions for concise syntax",
+                expectedOutput: "[1, 4, 9] in console"
+            },
+            {
+                title: "Destructuring",
+                broken: `<script>\nconst person = { name: 'Alice', age: 25 };\nconst name = person.name;\nconst age = person.age;\nconsole.log(name, age);\n</script>`,
+                fixed: `<script>\nconst person = { name: 'Alice', age: 25 };\nconst { name, age } = person;\nconsole.log(name, age);\n</script>`,
+                hint: "Use destructuring for cleaner property extraction",
+                expectedOutput: "Alice 25 in console"
+            },
+            {
+                title: "Spread Operator",
+                broken: `<script>\nconst arr1 = [1, 2];\nconst arr2 = [3, 4];\nconst combined = arr1.concat(arr2);\nconsole.log(combined);\n</script>`,
+                fixed: `<script>\nconst arr1 = [1, 2];\nconst arr2 = [3, 4];\nconst combined = [...arr1, ...arr2];\nconsole.log(combined);\n</script>`,
+                hint: "Use spread operator for array concatenation",
+                expectedOutput: "[1, 2, 3, 4] in console"
+            },
+            {
+                title: "Modules",
+                broken: `<script>\n// math.js\nfunction add(a, b) { return a + b; }\n\n// main.js\nconsole.log(add(2, 3));\n</script>`,
+                fixed: `<script type="module">\n// math.js\nexport function add(a, b) { return a + b; }\n\n// main.js\nimport { add } from './math.js';\nconsole.log(add(2, 3));\n</script>`,
+                hint: "Use ES6 modules for better code organization",
+                expectedOutput: "5 in console"
             }
-            // More HTML/JS challenges...
         ],
         4: [
             {
@@ -1159,8 +1260,35 @@ const codeChallenges = {
                 fixed: `<script>\nasync function getData() {\n    const response = await fetch('https://api.example.com/data');\n    const data = await response.json();\n    console.log(data);\n}\ngetData();\n</script>`,
                 hint: "Don't forget await keywords",
                 expectedOutput: "API data in console"
+            },
+            {
+                title: "Promises",
+                broken: `<script>\nfunction fetchData() {\n    return new Promise((resolve) => {\n        setTimeout(() => {\n            resolve('Data');\n        }, 1000);\n    }\n}\n\nfetchData().then(data => console.log(data));\n</script>`,
+                fixed: `<script>\nfunction fetchData() {\n    return new Promise((resolve) => {\n        setTimeout(() => {\n            resolve('Data');\n        }, 1000);\n    });\n}\n\nfetchData().then(data => console.log(data));\n</script>`,
+                hint: "Missing closing parenthesis for Promise constructor",
+                expectedOutput: "Data in console after 1 second"
+            },
+            {
+                title: "Error Handling",
+                broken: `<script>\nasync function getData() {\n    const response = await fetch('https://api.example.com/data');\n    const data = await response.json();\n    console.log(data);\n}\ngetData();\n</script>`,
+                fixed: `<script>\nasync function getData() {\n    try {\n        const response = await fetch('https://api.example.com/data');\n        const data = await response.json();\n        console.log(data);\n    } catch (error) {\n        console.error('Error:', error);\n    }\n}\ngetData();\n</script>`,
+                hint: "Always handle potential errors in async code",
+                expectedOutput: "Either data or error in console"
+            },
+            {
+                title: "Web Workers",
+                broken: `<script>\n// main.js\nconst worker = new Worker('worker.js');\nworker.postMessage('Start');\n\n// worker.js\nself.onmessage = function(e) {\n    console.log(e.data);\n    self.postMessage('Done');\n}`,
+                fixed: `<script>\n// main.js\nconst worker = new Worker('worker.js');\nworker.postMessage('Start');\nworker.onmessage = function(e) {\n    console.log(e.data);\n};\n\n// worker.js\nself.onmessage = function(e) {\n    console.log(e.data);\n    self.postMessage('Done');\n};\n</script>`,
+                hint: "Need to handle messages in both main thread and worker",
+                expectedOutput: "Message exchange between main thread and worker"
+            },
+            {
+                title: "Service Workers",
+                broken: `<script>\n// Register service worker\nif ('serviceWorker' in navigator) {\n    navigator.serviceWorker.register('/sw.js');\n}`,
+                fixed: `<script>\n// Register service worker\nif ('serviceWorker' in navigator) {\n    window.addEventListener('load', () => {\n        navigator.serviceWorker.register('/sw.js')\n            .then(registration => {\n                console.log('SW registered');\n            })\n            .catch(err => {\n                console.log('SW registration failed:', err);\n            });\n    });\n}\n</script>`,
+                hint: "Properly handle service worker registration with promises",
+                expectedOutput: "Service worker registration status in console"
             }
-            // More HTML/JS challenges...
         ],
         5: [
             {
@@ -1169,8 +1297,35 @@ const codeChallenges = {
                 fixed: `<script>\nclass MyElement extends HTMLElement {\n    constructor() {\n        super();\n    }\n    connectedCallback() {\n        this.innerHTML = '<h1>Hello</h1>';\n    }\n}\ncustomElements.define('my-element', MyElement);\n</script>`,
                 hint: "Custom elements need constructor with super()",
                 expectedOutput: "<my-element> with 'Hello' heading"
+            },
+            {
+                title: "Shadow DOM",
+                broken: `<script>\nclass MyElement extends HTMLElement {\n    constructor() {\n        super();\n        this.innerHTML = '<h1>Hello</h1>';\n    }\n}\ncustomElements.define('my-element', MyElement);\n</script>`,
+                fixed: `<script>\nclass MyElement extends HTMLElement {\n    constructor() {\n        super();\n        this.attachShadow({ mode: 'open' });\n        this.shadowRoot.innerHTML = '<h1>Hello</h1>';\n    }\n}\ncustomElements.define('my-element', MyElement);\n</script>`,
+                hint: "Use Shadow DOM for encapsulation",
+                expectedOutput: "Encapsulated <my-element> with 'Hello' heading"
+            },
+            {
+                title: "Custom Events",
+                broken: `<script>\ndocument.dispatchEvent('customEvent');\n</script>`,
+                fixed: `<script>\nconst event = new CustomEvent('customEvent', {\n    detail: { message: 'Hello' }\n});\ndocument.dispatchEvent(event);\n</script>`,
+                hint: "Use CustomEvent constructor for custom events",
+                expectedOutput: "Custom event dispatched (check with event listener)"
+            },
+            {
+                title: "Proxies",
+                broken: `<script>\nconst target = {};\nconst handler = {\n    get: function(target, prop) {\n        return target[prop];\n    }\n};\nconst proxy = new Proxy(target, handler);\nproxy.name = 'Alice';\nconsole.log(proxy.name);\n</script>`,
+                fixed: `<script>\nconst target = {};\nconst handler = {\n    get: function(target, prop) {\n        return target[prop];\n    },\n    set: function(target, prop, value) {\n        target[prop] = value;\n        return true;\n    }\n};\nconst proxy = new Proxy(target, handler);\nproxy.name = 'Alice';\nconsole.log(proxy.name);\n</script>`,
+                hint: "Need set trap to handle property assignment",
+                expectedOutput: "Alice in console"
+            },
+            {
+                title: "WebAssembly",
+                broken: `<script>\n// Assuming add.wasm exports an add function\nfetch('add.wasm')\n    .then(response => response.arrayBuffer())\n    .then(bytes => WebAssembly.instantiate(bytes))\n    .then(results => {\n        console.log(results.instance.exports.add(2, 3));\n    });\n</script>`,
+                fixed: `<script>\n// Assuming add.wasm exports an add function\nfetch('add.wasm')\n    .then(response => response.arrayBuffer())\n    .then(bytes => WebAssembly.instantiate(bytes))\n    .then(results => {\n        console.log(results.instance.exports.add(2, 3));\n    })\n    .catch(error => console.error(error));\n</script>`,
+                hint: "Always handle potential errors in WebAssembly loading",
+                expectedOutput: "5 in console (if wasm module is correct)"
             }
-            // More advanced HTML/JS challenges...
         ]
     }
 };
